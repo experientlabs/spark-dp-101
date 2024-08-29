@@ -12,7 +12,7 @@ This docker application has all basic features of Apache Spark like:
 
 ### Architecture
 
-> ![hl_architecture.png](hl_architecture.png)
+> ![hl_architecture.png](resources/hl_architecture.png)
 
 ### How to use it:
 #### 1. Clone the repository in your machine using git clone command  
@@ -116,7 +116,7 @@ http://localhost:18080/
 > ![spark_history_server.png](resources/spark_history_server.png)
 
 
-### Above features can also be accessed using docker-compose commands
+Above features can also be accessed using docker-compose commands
 - docker-compose up jupyter
 - docker-compose up spark-shell
 - docker-compose up pyspark
