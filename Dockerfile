@@ -59,7 +59,6 @@ RUN echo "spark.eventLog.enabled true" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.eventLog.dir file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.history.fs.logDirectory file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf
 
-RUN chown -R $USER_UID:$USER_GID ${SPARK_HOME}/logs
 
 # Install Python packages for Jupyter and PySpark
 RUN pip install --no-cache-dir jupyter findspark
