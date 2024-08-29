@@ -6,9 +6,9 @@ which are big in volume and take too much resources.
 This docker application has all basic features of Apache Spark like:
 1. Spark Shell 
 2. Pyspark Shell 
-3. Jupyter Notebook 
-4. Spark UI and 
-5. Spark History Server 
+3. Jupyter Notebook http://localhost:4041
+4. Spark UI http://localhost:4040
+5. Spark History Server http://localhost:18080
 
 ### Architecture
 
@@ -33,7 +33,7 @@ This docker application has all basic features of Apache Spark like:
    hostfolder="$(pwd)"
    dockerfolder="/home/sparkuser/app"
    
-   docker run --rm -it --name spark-container \
+   docker run --rm -d --name spark-container \
    -p 4040:4040 -p 4041:4041 -p 18080:18080 \
    -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
    spark-dp-101:latest jupyter
@@ -122,4 +122,6 @@ Above features can also be accessed using docker-compose commands
 - docker-compose up pyspark
 
 
+This repository is brough to you by ExperientLabs, if you want to contribute, please feel free to raise a PR or if you 
+come across an issue, don't hesitate to raise it. 
 
