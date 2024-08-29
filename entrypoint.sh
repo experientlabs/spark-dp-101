@@ -10,7 +10,7 @@ start_jupyter() {
 # Function to start Spark Shell
 start_spark_shell() {
     echo "Starting Spark Shell..."
-    spark-shell
+    $SPARK_HOME/sbin/start-history-server.sh && spark-shell
 }
 
 # Function to start PySpark Shell
@@ -18,7 +18,7 @@ start_pyspark_shell() {
     echo "Starting PySpark Shell..."
     unset PYSPARK_DRIVER_PYTHON
     unset PYSPARK_DRIVER_PYTHON_OPTS
-    pyspark
+    $SPARK_HOME/sbin/start-history-server.sh && pyspark
 }
 
 # Main logic to decide which service to start
