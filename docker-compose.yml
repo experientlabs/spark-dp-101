@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  jupyter:
+    image: spark-dp-101:latest
+    container_name: spark-container-jupyter
+    ports:
+      - "8888:8888"
+      - "4041:4041"
+      - "4040:4040"
+      - "18080:18080"
+    volumes:
+      - ./app:/home/sparkuser/app
+      - ./app/event_logs:/home/spark/event_logs
+    command: jupyter
+    restart: unless-stopped
+
+  spark-shell:
+    image: spark-dp-101:latest
+    container_name: spark-shell
+    ports:
+      - "8888:8888"
+      - "4041:4041"
+      - "4040:4040"
+      - "18080:18080"
+    volumes:
+      - ./app:/home/sparkuser/app
+      - ./app/event_logs:/home/spark/event_logs
+    command: spark-shell
+    restart: unless-stopped
+
+  pyspark:
+    image: spark-dp-101:latest
+    container_name: pyspark-container
+    ports:
+      - "8888:8888"
+      - "4041:4041"
+      - "4040:4040"
+      - "18080:18080"
+    volumes:
+      - ./app:/home/sparkuser/app
+      - ./app/event_logs:/home/spark/event_logs
+    command: pyspark
+    restart: unless-stopped
