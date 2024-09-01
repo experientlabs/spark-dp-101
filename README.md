@@ -46,10 +46,21 @@ This docker application has all basic features of Apache Spark like:
    dockerfolder="/home/sparkuser/app"
    
    docker run --rm -it --name spark-container \
-   -p 4040:4040 -p 4041:4041 -p 18080:18080 \
+   -p 4040:4040 -p 18080:18080 -p 8080:8080 \
    -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
    spark-dp-101:latest spark-shell
    ```
+
+
+```commandline
+hostfolder="$(pwd)"
+dockerfolder="/home/sparkuser/app"
+
+docker run --rm -it --name spark-uc \
+-p 4040:4040 -p 18080:18080 -p 8080:8080 \
+-v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
+spark-dp-101:latest spark-shell
+```
 
 ####  Similarly to run pyspark shell  use below command (here last parameter is replaced with `pyspark`). 
 
@@ -128,3 +139,5 @@ come across an issue, don't hesitate to raise it.
 
 docker cp /home/sanjeet/Downloads/unitycatalog-0.1.0.tar.gz be3a8857e400:/home/spark/unitycatalog-0.1.0.tar.gz
 tar -xf unitycatalog-0.1.0.tar.gz
+
+https://books.japila.pl/unity-catalog-internals/demo/namespace-support-in-spark-integration/
