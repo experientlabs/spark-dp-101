@@ -9,8 +9,17 @@ start_jupyter() {
 
 # Function to start Spark Shell
 start_spark_shell() {
-    echo "Starting Spark Shell..."
-    $SPARK_HOME/sbin/start-history-server.sh && spark-shell
+    echo "Starting Spark Shell with Delta Lake and Unity Catalog..."
+    $SPARK_HOME/sbin/start-history-server.sh && \
+    SPARK_SUBMIT_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5555 \
+    $SPARK_HOME/bin/spark-shell \
+    --jars /home/spark/jars/unitycatalog-spark.jar \
+    --packages io.delta:delta-spark_2.13:3.2.0,io.unitycatalog:unitycatalog-spark \
+    --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
+    --conf spark.sql.catalog.spark_catalog=io.unitycatalog.connectors.spark.UCSingleCatalog \
+    --conf spark.sql.catalog.spark_catalog.uri=http://localhost:8080 \
+    --conf spark.sql.catalog.unity=io.unitycatalog.connectors.spark.UCSingleCatalog \
+    --conf spark.sql.catalog.unity.uri=http://localhost:8080
 }
 
 # Function to start PySpark Shell

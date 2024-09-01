@@ -9,6 +9,10 @@ ENV SPARK_HOME=/home/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
 ENV JAVA_VERSION=11
 
+# Additional environment variables for Delta Lake and Unity Catalog
+ENV DELTA_VERSION=3.2.0
+ENV UNITY_CATALOG_VERSION=0.2.0-SNAPSHOT
+
 # Install necessary packages and dependencies
 RUN apt-get update && apt-get install -y \
     "openjdk-${JAVA_VERSION}-jre-headless" \
@@ -22,19 +26,19 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN SPARK_DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
-    && wget --verbose -O apache-spark.tgz "${SPARK_DOWNLOAD_URL}" \
-    && mkdir -p /home/spark \
-    && tar -xf apache-spark.tgz -C /home/spark --strip-components=1 \
-    && rm apache-spark.tgz
+#RUN SPARK_DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
+#    && wget --verbose -O apache-spark.tgz "${SPARK_DOWNLOAD_URL}" \
+#    && mkdir -p /home/spark \
+#    && tar -xf apache-spark.tgz -C /home/spark --strip-components=1 \
+#    && rm apache-spark.tgz
 
-## Use local downloaded jar/tarball into the image if you don't want to download from the internet
-#COPY downloads/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz /tmp/apache-spark.tgz
-#
-## Create the directory, extract the tarball, and remove the tarball
-#RUN mkdir -p ${SPARK_HOME} \
-#    && tar -xf /tmp/apache-spark.tgz -C ${SPARK_HOME} --strip-components=1 \
-#    && rm /tmp/apache-spark.tgz
+# Use local downloaded jar/tarball into the image if you don't want to download from the internet
+COPY downloads/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz /tmp/apache-spark.tgz
+
+# Create the directory, extract the tarball, and remove the tarball
+RUN mkdir -p ${SPARK_HOME} \
+    && tar -xf /tmp/apache-spark.tgz -C ${SPARK_HOME} --strip-components=1 \
+    && rm /tmp/apache-spark.tgz
 
 # Set up a non-root user
 ARG USERNAME=sparkuser
@@ -60,6 +64,10 @@ RUN echo "spark.eventLog.enabled true" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.history.fs.logDirectory file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf
 
 
+RUN mkdir -p /home/spark/jars
+COPY downloads/delta-spark_2.13-3.2.0.jar /home/spark/jars
+COPY downloads/unitycatalog-spark.jar /home/spark/jars
+
 # Install Python packages for Jupyter and PySpark
 RUN pip install --no-cache-dir jupyter findspark
 
@@ -75,7 +83,7 @@ RUN mkdir -p /home/$USERNAME/app
 
 WORKDIR /home/$USERNAME/app
 
-# Expose necessary ports for Jupyter and Spark UI
-EXPOSE 4040 4041 18080 8888
+# Expose necessary ports for Jupyter and Spark UI, and JDWP debug port (5555)
+EXPOSE 4040 4041 18080 8888 5555 8080
 
 ENTRYPOINT ["/home/spark/entrypoint.sh"]
