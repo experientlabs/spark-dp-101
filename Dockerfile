@@ -63,13 +63,15 @@ RUN echo "spark.eventLog.enabled true" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.eventLog.dir file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.history.fs.logDirectory file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf
 
-
-RUN mkdir -p /home/spark/jars
-COPY downloads/delta-spark_2.13-3.2.0.jar /home/spark/jars
-COPY downloads/unitycatalog-spark.jar /home/spark/jars
-
 # Install Python packages for Jupyter and PySpark
 RUN pip install --no-cache-dir jupyter findspark
+
+RUN mkdir -p /home/spark/jars
+COPY downloads/delta-spark_2.13-3.2.0.jar /home/spark/jars/delta-spark_2.13-3.2.0.jar
+COPY downloads/unitycatalog-spark.jar /home/spark/jars/unitycatalog-spark.jar
+COPY downloads/unitycatalog-spark-0.2.0-SNAPSHOT.jar /home/spark/jars/unitycatalog-spark-0.2.0-SNAPSHOT.jar
+
+RUN ls -la /home/spark/jars
 
 # Add the entrypoint script
 COPY entrypoint.sh /home/spark/entrypoint.sh
