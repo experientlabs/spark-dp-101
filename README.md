@@ -125,3 +125,6 @@ Above features can also be accessed using docker-compose commands
 This repository is brough to you by ExperientLabs, if you want to contribute, please feel free to raise a PR or if you 
 come across an issue, don't hesitate to raise it. 
 
+
+docker cp /home/sanjeet/Downloads/unitycatalog-0.1.0.tar.gz be3a8857e400:/home/spark/unitycatalog-0.1.0.tar.gz
+tar -xf unitycatalog-0.1.0.tar.gz
