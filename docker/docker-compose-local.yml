@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+      - "${PWD}/db-data:/var/lib/postgresql/data"
+
+  local-runner:
+    image: airflow-dev:2_10
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+      - "${PWD}/dags:/usr/local/airflow/dags"
+      - "${PWD}/plugins:/usr/local/airflow/plugins"
+      - "${PWD}/requirements:/usr/local/airflow/requirements"
+    ports:
+      - "8080:8080"
+    command: local-runner
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    env_file:
+      - ./config/.env.localrunner
+
+  jupyter:
+    build:
+      context: ..
+      dockerfile: spark.Dockerfile
+    image: spark1n:latest
+    container_name: spark-container-jupyter
+    ports:
+      - "8888:8888"
+      - "4041:4041"
+      - "4040:4040"
+      - "18080:18080"
+    volumes:
+      - ../app:/home/sparkuser/app
+      - ../app/event_logs:/home/spark/event_logs
+      - ./ssh_keys:/home/sparkuser/.ssh
+    environment:
+      SSH_PUBLIC_KEY_PATH: /home/sparkuser/.ssh/id_rsa.pub
+    command: jupyter
+    restart: unless-stopped

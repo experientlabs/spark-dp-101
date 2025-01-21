@@ -2,3 +2,7 @@ app/.ipynb_checkpoints
 downloads
 event_logs
 .idea
+venv
+db-data
+docker/ssh_keys
+docker/spark-3.5.4-bin-hadoop3.tgz

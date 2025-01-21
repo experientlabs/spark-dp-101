@@ -1,130 +1,89 @@
-# Spark-DP-101
-
-Spark Data Platform-101 is a Very basic Apache Spark setup in a Docker Container. 
-This setup is designed for testing Apache spark and for learning purpose as an alternative to VM's 
-which are big in volume and take too much resources. 
-This docker application has all basic features of Apache Spark like:
-1. Spark Shell 
-2. Pyspark Shell 
-3. Jupyter Notebook http://localhost:4041
-4. Spark UI http://localhost:4040
-5. Spark History Server http://localhost:18080
+# Spark-DP-201
 
 ### Architecture
+In this architecture the Airflow container is directly connecting to spark container via ssh connection 
+and also via docker network bridge. However an Ideal architecture can have an intermediate node (Edge Node) 
+that acts as bridge between Spark and Airflow. But as the quote goes *Simple is Beautiful*, so let's go ahead 
+with this simple setup.  
+> ![architecture.png](resources%2Farchitecture.png)
 
-> ![hl_architecture.png](resources/hl_architecture.png)
 
-### How to use it:
-#### 1. Clone the repository in your machine using git clone command  
+## How to use this setup to run airflow and Spark:
+
+### Step 1: Clone the repository.   
    ```commandline
    git clone git@github.com:experientlabs/spark-dp-101.git
    ```
-#### 2. Next build the image by running below `docker build` command.  
 
-   ```commandline
-   docker build -t spark-dp-101 .
-   ```
-   - Here -t is to tag image with a name:`spark-dp-101`.
-   - Here '.' is to run the build command in current directory. So dockerfile should be located in current directory.   
+### Step 2. Generate ssh key pair.
+This will be used for establishing communication between airflow and spark nodes. 
+So that airflow can run ssh jobs on spark node
 
-#### 3. Once image is built you need to run following command to run the container in jupyter notebook mode. 
-
-   ```commandline
-   hostfolder="$(pwd)"
-   dockerfolder="/home/sparkuser/app"
-   
-   docker run --rm -d --name spark-container \
-   -p 4040:4040 -p 4041:4041 -p 18080:18080 \
-   -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
-   spark-dp-101:latest jupyter
-   ```
-
-####  In order to run it in saprk-shell mode use below command (here last parameter is replaced with `spark-shell`). 
-
-   ```commandline
-   hostfolder="$(pwd)"
-   dockerfolder="/home/sparkuser/app"
-   
-   docker run --rm -it --name spark-container \
-   -p 4040:4040 -p 4041:4041 -p 18080:18080 \
-   -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
-   spark-dp-101:latest spark-shell
-   ```
-
-####  Similarly to run pyspark shell  use below command (here last parameter is replaced with `pyspark`). 
-
-   ```commandline
-   hostfolder="$(pwd)"
-   dockerfolder="/home/sparkuser/app"
-   
-   docker run --rm -it --name spark-container \
-   -p 4040:4040 -p 4041:4041 -p 18080:18080 \
-   -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
-   spark-dp-101:latest pyspark
-   ```
-
-#### Once your container is running you can use below urls to access various web UI's
-1. Jupyter Notebook: http://localhost:4041
-2. Spark UI: http://localhost:4040
-3. Spark History Server: http://localhost:18080
-
-
-Terminal window after running docker run command:
-
-> ![terminal.png](resources/terminal.png)
-> ![terminal_op.png](resources/terminal_op.png)
-
-### Jupyter Notebook
-http://127.0.0.1:4041/notebooks/first_notebook.ipynb
-Running below code in jupyter notebook, in order to ascertain that spark is working fine in the container. 
-```python
-import findspark
-findspark.init()
-import pyspark
-from pyspark.sql import SparkSession
-import pyspark.sql.functions as f
-
-# create spark session
-spark = SparkSession.builder.appName("SparkSample").getOrCreate()
-
-# read text file
-df_text_file = spark.read.text("textfile.txt")
-df_text_file.show()
-
-df_total_words = df_text_file.withColumn('wordCount', f.size(f.split(f.col('value'), ' ')))
-df_total_words.show()
-
-# Word count example
-df_word_count = df_text_file.withColumn('word', f.explode(f.split(f.col('value'), ' '))).groupBy('word').count().sort('count', ascending=False)
-df_word_count.show()
+```shell
+./mwaa-local-env generate-ssh-key
 ```
 
-> ![jupyter.png](resources/jupyter.png)
+### Step 3. Build Image.
 
-### Output of word count example: 
+```shell
+./de-local-env build-image
+```
 
-> ![jupyter_op.png](resources/jupyter_op.png)
+### Step 4. Run the setup.
+
+```shell
+./de-local-env start
+```
+
+### Step 5. Run the `setup_connections.py` to create ssh connections in Airflow. 
+
+```shell
+pyton setup_connections.py
+```
+
+![img.png](resources/airflow_connection.png)
+
+### Step 6. Allow container to write to app directory which is used as volume mount
+```shell
+chmod -R 777 app/
+```
+
+> Feel free to post in the comment section if you run across any problem. 
+
+# Apache Spark and Airflow UI is accessible here:
+1. Jupyter Notebook http://localhost:4041
+2. Spark UI http://localhost:4040
+3. Spark History Server http://localhost:18080
+4. Airflow UI http://localhost:8080 **user**: `admin` **password**: `test`
+5. Spark Shell 
+6. Pyspark Shell
+
+### Airflow Dags
+
+There are few sample airflow dags with this setup
+1. **bash_operator_dag_test.py:** Simple dag just tests ssh connection.
+- task-1: **_print_python_version:_** Runs `python --version` command using shh_connection_id: `ssh_spark_node`
+- task-2: **_get_system_info:_** Prints container name using `uname -a` command and shh_connection_id: `ssh_spark_node`
+
+2. **bash_operator_dag.py:** Same as above just uses a different ssh_connection_id.
+3. **spark_job_dag.py:** Simple spark dag to test spark.
+4. **spark_wc_dag.py:** Simple spark word_count dag to test spark. 
+
+
+### Airflow UI: 
+http://localhost:8080 user: admin password: test
+> ![img.png](resources/airflow_login.png)
+> ![airflow_ui.png](resources%2Fairflow_ui.png)
+> ![img.png](resources/airflow_log.png)
+> ![img_1.png](resources/airflow_run_log.png)
+
+### Jupyter Notebook:
+![jupyter.png](resources%2Fjupyter.png)
+![jupyter_op.png](resources%2Fjupyter_op.png)
 
 
 ### Spark UI:
-http://localhost:4040/jobs/
-> ![spark_ui.png](resources/saprk_ui.png)
+![saprk_ui.png](resources%2Fsaprk_ui.png)
 
-
-### Spark History Server: 
-http://localhost:18080/
-> ![spark_history_server.png](resources/spark_history_server.png)
-
-
-Above features can also be accessed using docker-compose commands
-- docker-compose up jupyter
-- docker-compose up spark-shell
-- docker-compose up pyspark
-
-
-This repository is brough to you by ExperientLabs, if you want to contribute, please feel free to raise a PR or if you 
-come across an issue, don't hesitate to raise it. 
-
-
-docker cp /home/sanjeet/Downloads/unitycatalog-0.1.0.tar.gz be3a8857e400:/home/spark/unitycatalog-0.1.0.tar.gz
-tar -xf unitycatalog-0.1.0.tar.gz
+### Spark History Server:
+![spark_history_server.png](resources%2Fspark_history_server.png)

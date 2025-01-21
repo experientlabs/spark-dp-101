@@ -1,16 +1,22 @@
 #!/bin/bash
 
+# Start SSH service in the background
+echo "Starting SSH service..."
+service ssh start &
+
 # Function to start Jupyter Notebook
 start_jupyter() {
     echo "Starting Spark History Server..."
+    $SPARK_HOME/sbin/start-history-server.sh &
     echo "Starting Jupyter Notebook..."
-    $SPARK_HOME/sbin/start-history-server.sh && jupyter notebook --ip=0.0.0.0 --port=4041 --no-browser --NotebookApp.token='' --NotebookApp.password=''
+    jupyter notebook --ip=0.0.0.0 --port=4041 --no-browser --NotebookApp.token='' --NotebookApp.password='' --allow-root
 }
 
 # Function to start Spark Shell
 start_spark_shell() {
     echo "Starting Spark Shell..."
-    $SPARK_HOME/sbin/start-history-server.sh && spark-shell
+    $SPARK_HOME/sbin/start-history-server.sh &
+    spark-shell
 }
 
 # Function to start PySpark Shell
@@ -18,7 +24,8 @@ start_pyspark_shell() {
     echo "Starting PySpark Shell..."
     unset PYSPARK_DRIVER_PYTHON
     unset PYSPARK_DRIVER_PYTHON_OPTS
-    $SPARK_HOME/sbin/start-history-server.sh && pyspark
+    $SPARK_HOME/sbin/start-history-server.sh &
+    pyspark
 }
 
 # Main logic to decide which service to start
@@ -37,3 +44,5 @@ case "$1" in
         exit 1
         ;;
 esac
+# Keep the container running
+tail -f /dev/null
