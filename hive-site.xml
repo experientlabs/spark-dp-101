@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- JDBC connection string for PostgreSQL -->
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:postgresql://host.docker.internal:5432/hive_metastore</value>
+        <description>PostgreSQL connection URL for Hive metastore</description>
+    </property>
+
+    <!-- JDBC driver for PostgreSQL -->
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>org.postgresql.Driver</value>
+        <description>PostgreSQL JDBC driver class</description>
+    </property>
+
+    <!-- PostgreSQL username -->
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>postgres</value>
+        <description>PostgreSQL username for Hive metastore</description>
+    </property>
+
+    <!-- PostgreSQL password -->
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>xxx</value>
+        <description>PostgreSQL password for Hive metastore</description>
+    </property>
+
+    <!-- Hive metastore dialect -->
+    <property>
+        <name>datanucleus.autoCreateSchema</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.metastore.schema.verification.record.version</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>datanucleus.schema.autoCreateTables</name>
+        <value>true</value>
+    </property>
+
+    <!-- Metastore warehouse location -->
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+        <description>Location of default database for the warehouse</description>
+    </property>
+</configuration>

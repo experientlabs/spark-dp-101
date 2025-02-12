@@ -2,8 +2,8 @@
 FROM python:3.11-buster
 
 # Set environment variables for Spark and Java
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-ENV SPARK_VERSION=3.5.2
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-arm64
+ENV SPARK_VERSION=3.5.4
 ENV HADOOP_VERSION=3
 ENV SPARK_HOME=/home/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
@@ -12,12 +12,14 @@ ENV JAVA_VERSION=11
 # Install necessary packages and dependencies
 RUN apt-get update && apt-get install -y \
     "openjdk-${JAVA_VERSION}-jre-headless" \
+    scala \
     curl \
     wget \
     vim \
     sudo \
     whois \
     ca-certificates-java \
+    postgresql-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -59,15 +61,35 @@ RUN echo "spark.eventLog.enabled true" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.eventLog.dir file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf \
     && echo "spark.history.fs.logDirectory file://${SPARK_HOME}/event_logs" >> $SPARK_HOME/conf/spark-defaults.conf
 
+# create hive directory
+RUN mkdir -p /user/hive/warehouse
+RUN chmod 777 /user/hive/warehouse # TODO: limit permissions
 
-# Install Python packages for Jupyter and PySpark
+# Copy the config files and jar files across
+# TODO: jars should be downloaded
+COPY hive-site.xml /home/spark/conf/
+COPY spark-defaults.conf /home/spark/conf/
+COPY postgresql-42.7.5.jar /home/spark/jars
+RUN psql -h host.docker.internal -U postgres --no-password -c "create database hive_metastore owner postgres"
+
+# Install Python packages for Jupyter and PySpark and scala
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter findspark
+RUN pip install spylon-kernel
+RUN python -m spylon_kernel install
+RUN jupyter kernelspec list
+
+# install delta lakes
+RUN pip install delta-spark==3.2.0
 
 # Add the entrypoint script
 COPY entrypoint.sh /home/spark/entrypoint.sh
 RUN chmod +x /home/spark/entrypoint.sh
 
+
+#
 # Switch to non-root user
+#
 USER $USERNAME
 
 # Set workdir and create application directories

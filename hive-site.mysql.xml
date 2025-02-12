@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- JDBC connection string for mySql -->
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://host.docker.internal:3306/hive_metastore</value>
+        <description>mySql connection URL for Hive metastore</description>
+    </property>
+
+    <!-- JDBC driver for mySql -->
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.jdbc.Driver</value>
+        <description>mySql JDBC driver class</description>
+    </property>
+
+    <!-- mySql username -->
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>root</value>
+        <description>mySql username for Hive metastore</description>
+    </property>
+
+    <!-- mySql password -->
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>xxx</value>
+        <description>mySql password for Hive metastore</description>
+    </property>
+
+    <!-- Hive metastore dialect -->
+    <property>
+        <name>datanucleus.autoCreateSchema</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.metastore.schema.verification.record.version</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>datanucleus.schema.autoCreateTables</name>
+        <value>true</value>
+    </property>
+
+    <!-- Metastore warehouse location -->
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+        <description>Location of default database for the warehouse</description>
+    </property>
+</configuration>

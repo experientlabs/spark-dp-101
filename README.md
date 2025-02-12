@@ -1,14 +1,27 @@
-# Spark-DP-101
+# Special Thanks
 
-Spark Data Platform-101 is a Very basic Apache Spark setup in a Docker Container. 
-This setup is designed for testing Apache spark and for learning purpose as an alternative to VM's 
-which are big in volume and take too much resources. 
-This docker application has all basic features of Apache Spark like:
-1. Spark Shell 
-2. Pyspark Shell 
-3. Jupyter Notebook http://localhost:4041
-4. Spark UI http://localhost:4040
-5. Spark History Server http://localhost:18080
+## Getting Started
+These instructions have only been tested on modern Mac MX processors.
+
+1. Install Brew: https://docs.brew.sh/Installation
+2. Install docker desktop for apple silicon: https://docs.docker.com/desktop/setup/install/mac-install/
+3. Run the following in Terminal.app
+```
+docker pull postgres:latest
+docker stop hive_metastore
+docker rm hive_metastore
+docker run --name hive_metastore -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres
+
+docker stop spark-container
+docker rm spark-container
+docker build -t spark-dp-101 .; 
+hostfolder="$(pwd)";
+dockerfolder="/home/sparkuser/app";
+docker run --rm -d --name spark-container -p 4040:4040 -p 4041:4041 -p 18080:18080 -v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs spark-dp-101:latest jupyter
+```
+4. Spark Shell, Pyspark Shell, Jupyter Notebook http://localhost:4041, Spark UI http://localhost:4040, Spark History Server http://localhost:18080
+5. Open Jupyter Notebook
+6. 
 
 ### Architecture
 

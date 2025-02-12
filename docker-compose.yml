@@ -42,3 +42,4 @@ services:
       - ./app/event_logs:/home/spark/event_logs
     command: pyspark
     restart: unless-stopped
+    
