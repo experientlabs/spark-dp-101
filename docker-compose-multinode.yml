@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  edge-node:
+    image: spark-dp-101:latest
+    container_name: edge-node
+    command: /bin/bash -c "sleep infinity"  # Keeps the container running for interactive use
+    ports:
+      - "8888:8888"  # Optional: Expose Jupyter port if needed
+    volumes:
+      - ./app:/home/sparkuser/app
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+
+  spark-master:
+    image: spark-dp-101:latest
+    container_name: spark-master
+    command: /bin/bash -c "/home/spark/sbin/start-master.sh && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root"
+    ports:
+      - "8080:8080"  # Spark master UI
+      - "7077:7077"  # Spark master port
+      - "8888:8888"  # Jupyter Notebook port
+      - "18080:18080" # Spark History Server UI
+    volumes:
+      - ./app:/home/sparkuser/app
+      - ./app/event_logs:/home/spark/event_logs # Volume for event logs
+    environment:
+      - SPARK_MODE=master
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS="notebook --no-browser --port=8888"
+
+  spark-worker:
+    image: spark-dp-101:latest
+    container_name: spark-worker
+    command: /home/spark/sbin/start-worker.sh spark://spark-master:7077
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"  # Spark worker UI
+    volumes:
+      - ./app:/home/sparkuser/app
+      - ./app/event_logs:/home/spark/event_logs # Volume for event logs
+    environment:
+      - SPARK_MODE=worker

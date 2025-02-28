@@ -26,14 +26,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-#RUN SPARK_DOWNLOAD_URL="https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala2.13.tgz" \
-#    && wget --verbose -O apache-spark.tgz "${SPARK_DOWNLOAD_URL}" \
-#    && mkdir -p /home/spark \
-#    && tar -xf apache-spark.tgz -C /home/spark --strip-components=1 \
-#    && rm apache-spark.tgz
-
- Use local downloaded jar/tarball into the image if you don't want to download from the internet
-COPY downloads/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz /tmp/apache-spark.tgz
+#COPY downloads/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz /tmp/apache-spark.tgz
 COPY downloads/spark-3.5.2-bin-hadoop3-scala2.13.tgz /tmp/apache-spark.tgz
 
 # Create the directory, extract the tarball, and remove the tarball
@@ -41,15 +34,8 @@ RUN mkdir -p ${SPARK_HOME} \
     && tar -xf /tmp/apache-spark.tgz -C ${SPARK_HOME} --strip-components=1 \
     && rm /tmp/apache-spark.tgz
 
-# Download Hudi package
-RUN curl -O https://repo1.maven.org/maven2/org/apache/hudi/hudi-spark3.5-bundle_2.13/0.15.0/hudi-spark3.5-bundle_2.13-0.15.0.jar && \
-    mv hudi-spark3.5-bundle_2.13-0.15.0.jar $SPARK_HOME/jars/
-## RUN mv hudi-spark3.3-bundle_2.12-${HUDI_VERSION}.jar $SPARK_HOME/jars/
-#COPY downloads/hudi-spark3.5-bundle_2.13-0.15.0.jar $SPARK_HOME/jars/
-
-# Install additional dependencies for Hudi (like Avro, Parquet, Jackson)
-RUN curl -O https://repo1.maven.org/maven2/org/apache/spark/spark-avro_2.13/3.5.2/spark-avro_2.13-3.5.2.jar && \
-    mv spark-avro_2.13-3.5.2.jar $SPARK_HOME/jars/
+COPY downloads/hudi-spark3.5-bundle_2.13-0.15.0.jar $SPARK_HOME/jars/
+COPY downloads/spark-avro_2.13-3.5.2.jar $SPARK_HOME/jars/
 
 
 # Set up a non-root user
