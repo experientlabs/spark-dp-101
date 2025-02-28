@@ -22,7 +22,9 @@ This docker application has all basic features of Apache Spark like:
 #### 2. Next build the image by running below `docker build` command.  
 
    ```commandline
-   docker build -t spark-dp-101 .
+   docker build -t spark-dp-101 
+   docker build -t spark-hudi-101 -f dev.Dockerfile .
+
    ```
    - Here -t is to tag image with a name:`spark-dp-101`.
    - Here '.' is to run the build command in current directory. So dockerfile should be located in current directory.   
@@ -141,3 +143,82 @@ docker cp /home/sanjeet/Downloads/unitycatalog-0.1.0.tar.gz be3a8857e400:/home/s
 tar -xf unitycatalog-0.1.0.tar.gz
 
 https://books.japila.pl/unity-catalog-internals/demo/namespace-support-in-spark-integration/
+
+
+
+docker-compose -f docker-compose-multinode.yml up
+
+
+
+
+
+
+
+
+
+
+
+### Error Logs
+
+df.write.format("hudi").options(**hudi_options).mode("overwrite").save("/tmp/hudi_table")
+24/09/19 06:58:14 WARN DFSPropertiesConfiguration: Cannot find HUDI_CONF_DIR, please set it as the dir of hudi-defaults.conf
+24/09/19 06:58:14 WARN DFSPropertiesConfiguration: Properties file file:/etc/hudi/conf/hudi-defaults.conf not found. Ignoring to load props file
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/spark/python/pyspark/sql/readwriter.py", line 1463, in save
+    self._jwrite.save(path)
+  File "/home/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1322, in __call__
+  File "/home/spark/python/pyspark/errors/exceptions/captured.py", line 179, in deco
+    return f(*a, **kw)
+           ^^^^^^^^^^^
+  File "/home/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/protocol.py", line 326, in get_return_value
+py4j.protocol.Py4JJavaError: An error occurred while calling o71.save.
+: org.apache.hudi.exception.HoodieException: hoodie only support org.apache.spark.serializer.KryoSerializer as spark.serializer
+
+
+hostfolder="$(pwd)"
+dockerfolder="/home/sparkuser/app"
+
+docker run --rm -d --name spark-container \
+-p 4040:4040 -p 4041:4041 -p 18080:18080 \
+-v ${hostfolder}/app:${dockerfolder} -v ${hostfolder}/event_logs:/home/spark/event_logs \
+spark-hudi-101:latest jupyter
+
+
+
+/home/spark/sbin/start-history-server.sh && pyspark --jars /home/spark/jars/hudi-spark3.5-bundle_2.13-0.15.0.jar
+
+
+
+import findspark
+findspark.init()
+import pyspark
+from pyspark.sql import SparkSession
+import pyspark.sql.functions as f
+
+# Create SparkSession with Hudi configuration
+
+spark = SparkSession.builder \
+    .appName("HudiExample") \
+    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
+    .config("spark.sql.extensions", "org.apache.spark.sql.hudi.HoodieSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.hudi.catalog.HoodieCatalog") \
+    .getOrCreate()
+
+
+# Read Hudi data back
+hudi_read_options = {
+    'hoodie.datasource.query.type': 'snapshot'
+}
+
+df_hudi = spark.read.format("hudi").options(**hudi_read_options).load("/home/sparkuser/app/hudi/table/*")
+df_hudi.show()
+
+
+# Adding a new record
+new_data = [Row(id=3, name="Charlie", age=28)]
+df_new = spark.createDataFrame(new_data).withColumn("curr_timestamp", f.current_timestamp())
+df_new.show()
+
+# Write data (upsert)
+df_new.write.format("hudi").options(**hudi_options).mode("append").save("/home/sparkuser/app/hudi/table")

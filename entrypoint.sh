@@ -12,7 +12,7 @@ start_spark_shell() {
     echo "Starting Spark Shell with Delta Lake and Unity Catalog..."
     $SPARK_HOME/sbin/start-history-server.sh && \
     SPARK_SUBMIT_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5555 \
-    $SPARK_HOME/bin/spark-shell --verbose
+    $SPARK_HOME/bin/spark-shell --verbose --jars /home/spark/jars/hudi-spark3.5-bundle_2.13-0.15.0.jar
 }
 
 # Function to start PySpark Shell
@@ -20,7 +20,7 @@ start_pyspark_shell() {
     echo "Starting PySpark Shell..."
     unset PYSPARK_DRIVER_PYTHON
     unset PYSPARK_DRIVER_PYTHON_OPTS
-    $SPARK_HOME/sbin/start-history-server.sh && pyspark
+    $SPARK_HOME/sbin/start-history-server.sh && pyspark --jars /home/spark/jars/hudi-spark3.5-bundle_2.13-0.15.0.jar
 }
 
 # Function to start a bash shell

@@ -1,5 +1,7 @@
 app/.ipynb_checkpoints
 downloads/spark-3.5.2-bin-hadoop3.tgz
+downloads/spark-3.5.2-bin-hadoop3-scala2.13.tgz
 event_logs
 .idea
 app/metastore_db
+downloads
